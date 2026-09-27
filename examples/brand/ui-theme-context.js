@@ -3,7 +3,7 @@ export async function loadThemeContext(domain) {
   if (!response.ok) throw new Error(`Brand lookup failed: ${response.status}`);
   const brand = await response.json();
   return {
-    logo: brand.logo,
+    logos: brand.logos,
     colors: brand.colors,
     fonts: brand.fonts,
   };
