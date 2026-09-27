@@ -50,7 +50,7 @@ The Logo endpoint returns an image even when it cannot resolve a brand mark. Che
 
 - Install or inspect the canonical [ReplyNodes Agent Skills repository](https://github.com/replynodes/replynodes-agent-skills).
 - Browse the canonical [`replynodes` skill on skills.sh](https://www.skills.sh/replynodes/replynodes-agent-skills/replynodes) and the [URL-to-Markdown skill page](https://www.skills.sh/replynodes/replynodes-agent-skills/url-to-markdown).
-- For OpenClaw discovery, see the [URL-to-Markdown page on ClawHub](https://clawhub.ai/replynodes-ai/skills/url-to-markdown) and the current [brand-logo-fetch listing](https://clawhub.ai/replynodes-ai/skills/brand-logo-fetch). The latter is the current legacy broad listing pending canonical `brand-logo` migration.
+- For OpenClaw discovery, see the [URL-to-Markdown page on ClawHub](https://clawhub.ai/replynodes-ai/skills/url-to-markdown) and the canonical [brand-logo listing](https://clawhub.ai/replynodes-ai/skills/brand-logo). The legacy `brand-logo-fetch` slug redirects to the canonical `brand-logo` listing.
 - Read the endpoint guides at [replynodes.com](https://replynodes.com/), then explore the [Markdown](https://replynodes.com/markdown-api/), [Brand](https://replynodes.com/brand-api/), and [Logo](https://replynodes.com/logo-api/) pages.
 
 This repository is an acquisition hub of documentation and examples only. It does not contain `skills/` or duplicate Agent Skill implementations.
