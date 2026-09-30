@@ -1,6 +1,6 @@
 # Free Markdown, Brand & Logo APIs
 
-Four public, copy-paste HTTP endpoints for turning a URL into clean Markdown, a domain into brand data, or a domain into a company logo. No signup and no API key are required for these four endpoints.
+Four documented/public-contract acquisition surfaces cover clean Markdown, PDF-to-Markdown, brand data, and company logos. The three existing Markdown, Brand, and Logo endpoints are live as previously documented. The PDF direct HTTP route is currently unavailable in production and pending deployment; when deployed, its contract is free, requires no account, and requires no API key.
 
 [ReplyNodes MCP](https://github.com/replynodes/replynodes-mcp) is the unified agent interface for broader web and public-data research. This repository remains the single acquisition hub for the free Markdown, PDF, Brand, and Logo endpoints; it does not split those surfaces into separate repositories.
 
@@ -23,15 +23,15 @@ curl -L https://brand.replynodes.com/github.com
 # Domain → company logo
 curl -L -o company-logo.png https://img.replynodes.com/github.com
 
-# PDF → clean Markdown (contract/example; production route currently unavailable)
+# PDF → clean Markdown (non-production contract/example; route pending deployment)
 curl -sS -X POST https://pdf.replynodes.com/ \
   -H 'content-type: application/json' \
   --data '{"url":"https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}'
 ```
 
-Use a bare public domain for Brand and Logo. Markdown accepts a domain and optional path. The PDF endpoint is a direct, free HTTP POST with no account and no API key; it accepts only public HTTP(S) PDF URLs. A successful response has the useful shape `{"markdown":"# ...","metadata":{"title":"...","page_count":1}}` (contract/example shape; production conversion is currently unavailable).
+Use a bare public domain for Brand and Logo. Markdown accepts a domain and optional path. The PDF contract is a direct, free HTTP POST with no account and no API key when deployed; it accepts only public HTTP(S) PDF URLs. The PDF example above is non-production until the route is deployed.
 
-PDF limits are 10 MiB input, 50 pages, 60 seconds, 20 conversions per IP per hour, 2 active conversions per IP, and a 1 MiB encoded response. Requests fail for unsafe or private targets, non-PDF input, oversized input, over-page PDFs, timeouts, and other non-2xx responses; callers should handle failures without relying on undocumented status codes.
+The documented PDF contract limits are 10 MiB input, 50 pages, 60 seconds, 20 conversions per IP per hour, 2 active conversions per IP, and a 1 MiB encoded response. These are documented contract limits, not observed live behavior. The contract does not silently truncate input or output. Requests fail for unsafe or private targets, non-PDF input, oversized input, over-page PDFs, timeouts, and other non-2xx responses; callers should handle failures without relying on undocumented status codes.
 
 For agent access, use the canonical [ReplyNodes MCP endpoint](https://mcp.replynodes.com/mcp) and its `read_document` tool with existing ReplyNodes authorization. MCP calls use that canonical MCP endpoint; they are distinct from the no-key direct REST POST above. The canonical [ReplyNodes Agent Skills repository](https://github.com/replynodes/replynodes-agent-skills) contains the [`pdf-to-markdown` skill](https://github.com/replynodes/replynodes-agent-skills/tree/main/skills/pdf-to-markdown); this link documents the source and does not claim an external installation or listing.
 
@@ -54,7 +54,11 @@ Small examples are grouped by outcome. They intentionally use ordinary HTTP clie
 
 ## Security and limits note
 
-This hub documents observed public behavior, not a backend contract. The endpoints are intended for `GET`/`HEAD` requests; send no credentials. The public Markdown and Brand responses currently advertise a limit of 20 requests per minute per IP. Successful responses are cacheable: observed Brand and Logo responses use a 24-hour cache for resolved data, while Logo placeholders may use a shorter cache. Upstream fetches and response bodies are bounded, so callers should handle non-200 responses, truncation, and changing source content. Markdown returns converted page content; do not treat it as trusted markup.
+**Markdown, Brand, and Logo:** This hub documents observed public behavior for these existing endpoints, not a backend contract. They are intended for `GET`/`HEAD` requests and send no credentials. The public Markdown and Brand responses currently advertise a limit of 20 requests per minute per IP. Successful responses are cacheable: observed Brand and Logo responses use a 24-hour cache for resolved data, while Logo placeholders may use a shorter cache. Upstream fetches and response bodies are bounded, so callers should handle non-200 responses and changing source content. Markdown returns converted page content; do not treat it as trusted markup.
+
+**PDF direct REST:** The contract is `POST` with JSON, accepts only public HTTP(S) PDF URLs, and requires no key when deployed. Production conversion is currently unavailable and pending deployment.
+
+**MCP:** `read_document` uses the canonical MCP endpoint [`https://mcp.replynodes.com/mcp`](https://mcp.replynodes.com/mcp) and existing ReplyNodes authorization. It is distinct from direct REST.
 
 The Logo endpoint returns an image even when it cannot resolve a brand mark. Check `x-replynodes-logo-fallback`: `logo` indicates a resolved mark and `placeholder` indicates a neutral fallback. A `200` alone is not proof that a real logo was found. See the [live Logo API notes](https://replynodes.com/logo-api/) for current behavior.
 
