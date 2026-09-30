@@ -7,6 +7,7 @@ Three public, copy-paste HTTP endpoints for turning a URL into clean Markdown, a
 | Need                  | Request                                                                         | Returns                                                 |
 | --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | URL → clean Markdown  | [`md.replynodes.com/{domain}[/{path}]`](https://md.replynodes.com/example.com/) | `text/markdown`                                         |
+| PDF → clean Markdown  | `POST https://pdf.replynodes.com/` with `{"url":"https://..."}`               | Markdown and basic PDF metadata                        |
 | Domain → brand data   | [`brand.replynodes.com/{domain}`](https://brand.replynodes.com/github.com)      | JSON identity, assets, colors, fonts, and style signals |
 | Domain → company logo | [`img.replynodes.com/{domain}`](https://img.replynodes.com/github.com)          | An image response suitable for `<img>`                  |
 
@@ -21,9 +22,18 @@ curl -L https://brand.replynodes.com/github.com
 
 # Domain → company logo
 curl -L -o company-logo.png https://img.replynodes.com/github.com
+
+# PDF → clean Markdown (contract/example; production route currently unavailable)
+curl -sS -X POST https://pdf.replynodes.com/ \
+  -H 'content-type: application/json' \
+  --data '{"url":"https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}'
 ```
 
-Use a bare public domain for Brand and Logo. Markdown accepts a domain and optional path. The endpoint pages have the authoritative request shapes and live examples: [Markdown API](https://replynodes.com/markdown-api/), [Brand API](https://replynodes.com/brand-api/), and [Logo API](https://replynodes.com/logo-api/).
+Use a bare public domain for Brand and Logo. Markdown accepts a domain and optional path. The PDF endpoint is a direct, free HTTP POST with no account and no API key; it accepts only public HTTP(S) PDF URLs. A successful response has the useful shape `{"markdown":"# ...","metadata":{"title":"...","page_count":1}}` (contract/example shape; production conversion is currently unavailable).
+
+PDF limits are 10 MiB input, 50 pages, 60 seconds, 20 conversions per IP per hour, 2 active conversions per IP, and a 1 MiB encoded response. Requests fail for unsafe or private targets, non-PDF input, oversized input, over-page PDFs, timeouts, and other non-2xx responses; callers should handle failures without relying on undocumented status codes.
+
+For agent access, use the canonical [ReplyNodes MCP endpoint](https://mcp.replynodes.com/mcp) and its `read_document` tool with existing ReplyNodes authorization. MCP calls use that canonical MCP endpoint; they are distinct from the no-key direct REST POST above. The canonical [ReplyNodes Agent Skills repository](https://github.com/replynodes/replynodes-agent-skills) contains the [`pdf-to-markdown` skill](https://github.com/replynodes/replynodes-agent-skills/tree/main/skills/pdf-to-markdown); this link documents the source and does not claim an external installation or listing.
 
 ## Recipes
 
