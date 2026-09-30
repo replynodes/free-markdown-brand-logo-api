@@ -1,8 +1,8 @@
 # Free Markdown, Brand & Logo APIs
 
-Three public, copy-paste HTTP endpoints for turning a URL into clean Markdown, a domain into brand data, or a domain into a company logo. No signup and no API key are required for these three endpoints.
+Four public, copy-paste HTTP endpoints for turning a URL into clean Markdown, a domain into brand data, or a domain into a company logo. No signup and no API key are required for these four endpoints.
 
-[ReplyNodes MCP](https://github.com/replynodes/replynodes-mcp) is the unified agent interface for broader web and public-data research. This repository remains the single acquisition hub for the free Markdown, Brand, and Logo endpoints; it does not split those surfaces into separate repositories.
+[ReplyNodes MCP](https://github.com/replynodes/replynodes-mcp) is the unified agent interface for broader web and public-data research. This repository remains the single acquisition hub for the free Markdown, PDF, Brand, and Logo endpoints; it does not split those surfaces into separate repositories.
 
 | Need                  | Request                                                                         | Returns                                                 |
 | --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- |
