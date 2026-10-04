@@ -33,6 +33,14 @@ Use a bare public domain for Brand and Logo. Markdown accepts a domain and optio
 
 The documented PDF contract limits are 10 MiB input, 50 pages, 60 seconds, 20 conversions per IP per hour, 2 active conversions per IP, and a 1 MiB encoded response. These are documented contract limits, not observed live behavior. The contract does not silently truncate input or output. Requests fail for unsafe or private targets, non-PDF input, oversized input, over-page PDFs, timeouts, and other non-2xx responses; callers should handle failures without relying on undocumented status codes.
 
+## Use this with your AI agent
+
+Install the canonical skill for URL-to-Markdown workflows:
+
+```sh
+npx skills add replynodes/replynodes-agent-skills --skill url-to-markdown
+```
+
 For agent access, use the canonical [ReplyNodes MCP endpoint](https://mcp.replynodes.com/mcp) and its `read_document` tool with existing ReplyNodes authorization. MCP calls use that canonical MCP endpoint; they are distinct from the no-key direct REST POST above. The canonical [ReplyNodes Agent Skills repository](https://github.com/replynodes/replynodes-agent-skills) contains the [`pdf-to-markdown` skill](https://github.com/replynodes/replynodes-agent-skills/tree/main/skills/pdf-to-markdown); this link documents the source and does not claim an external installation or listing.
 
 ## Recipes
