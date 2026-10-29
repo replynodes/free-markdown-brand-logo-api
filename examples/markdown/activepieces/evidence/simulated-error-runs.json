@@ -1,0 +1,72 @@
+{
+  "kind": "SIMULATED error responses. NOT observed on the live ReplyNodes service.",
+  "method": "A copy of the exported flow with ONLY the base URL changed to a local mock HTTP server inside the throwaway container. The mock returns the listed status and an error JSON shaped like the shared contract; the 451 and 502 error code names are illustrative. The live service was not forced into 429, 451, 502 or 5xx.",
+  "date_utc": "2026-10-29",
+  "mock_requests_received": "number of requests the mock counted for that case",
+  "runs": [
+    {
+      "mock_case": "429",
+      "caller_http_status": 429,
+      "run_status": "SUCCEEDED",
+      "branch_taken": [
+        "429: daily keyless limit (stop, no retry)"
+      ],
+      "failed_step": null,
+      "mock_requests_received": 1
+    },
+    {
+      "mock_case": "451",
+      "caller_http_status": 451,
+      "run_status": "SUCCEEDED",
+      "branch_taken": [
+        "451: page excluded by publisher (stop)"
+      ],
+      "failed_step": null,
+      "mock_requests_received": 1
+    },
+    {
+      "mock_case": "403",
+      "caller_http_status": 502,
+      "run_status": "SUCCEEDED",
+      "branch_taken": [
+        "Other error (stop)"
+      ],
+      "failed_step": null,
+      "mock_requests_received": 1
+    },
+    {
+      "mock_case": "502-blocked",
+      "caller_http_status": 204,
+      "run_status": "FAILED",
+      "branch_taken": null,
+      "failed_step": "ReplyNodes Markdown (HTTP GET)",
+      "mock_requests_received": 3
+    },
+    {
+      "mock_case": "502-empty",
+      "caller_http_status": 204,
+      "run_status": "FAILED",
+      "branch_taken": null,
+      "failed_step": "ReplyNodes Markdown (HTTP GET)",
+      "mock_requests_received": 3
+    },
+    {
+      "mock_case": "503-always",
+      "caller_http_status": 204,
+      "run_status": "FAILED",
+      "branch_taken": null,
+      "failed_step": "ReplyNodes Markdown (HTTP GET)",
+      "mock_requests_received": 3
+    },
+    {
+      "mock_case": "503-then-200",
+      "caller_http_status": 204,
+      "run_status": "SUCCEEDED",
+      "branch_taken": [
+        "OK (2xx): output Markdown"
+      ],
+      "failed_step": null,
+      "mock_requests_received": 3
+    }
+  ]
+}
