@@ -1,100 +1,193 @@
 {
-  "kind": "REAL runs against the live https://md.replynodes.com endpoint (keyless, no credential)",
-  "date_utc": "2026-10-29",
-  "environment": "Activepieces Community Edition 0.82.0, self-hosted Docker (activepieces/activepieces:latest, digest sha256:65ea85f5e7ea236416b342eef0d2dbade8da51247aaea495d191eb027095805a), embedded PGLite database, in-memory queue, UNSANDBOXED execution mode, local only",
-  "flow": "examples/markdown/activepieces/url-to-markdown.flow.json, imported into a fresh container, published, triggered through its webhook (POST {\"url\": ...})",
-  "sanitized": "No headers, cookies, request ids, tokens, run ids or worker logs. Markdown is truncated to its first 120 characters plus length and a short hash.",
-  "runs": [
+ "kind": "REAL runs against the live https://md.replynodes.com endpoint (keyless, no credential, no Authorization header)",
+ "date_utc": "2026-10-29",
+ "export_sha256": "6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc",
+ "environment": "Activepieces Community Edition 0.82.0, self-hosted Docker (activepieces/activepieces:latest, digest sha256:65ea85f5e7ea236416b342eef0d2dbade8da51247aaea495d191eb027095805a), embedded PGLite database, in-memory queue, UNSANDBOXED execution mode, local only. Built-in pieces: Webhook 0.1.43, Data Mapper 0.3.21, HTTP 0.11.19, Delay 0.3.34.",
+ "fresh_instance": "A brand-new container with no flows and no prior state. The committed export file was imported through the web UI Import dialog (Automations > Build a Flow > Import), then published with the UI Publish button, then triggered through its webhook (POST {\"url\": ...}). Runs were sequential.",
+ "live_error_envelope_shape": "{\"error\":{\"code\",\"message\",\"request_id\",\"retryable\",\"reason\"?}} observed on a real 400. The retry gate therefore reads body.error.retryable (not body.retryable).",
+ "sanitized": "No headers, cookies, request ids, tokens or run ids. Markdown is shown as its first 120 characters plus length and a short hash.",
+ "runs": [
+  {
+   "label": "site root",
+   "input_url": "https://example.com/",
+   "caller_http_status": 204,
+   "run_status": "SUCCEEDED",
+   "path": [
     {
-      "input_url": "https://example.com/",
-      "http_request_url": "https://md.replynodes.com/https://example.com/",
-      "run_status": "steps all SUCCEEDED; run record stayed RUNNING (see note)",
-      "branch_taken": [
-        "OK (2xx): output Markdown"
-      ],
-      "http_status": 200,
-      "title": "Example Domain",
-      "data_url": "https://example.com/",
-      "markdown_chars": 156,
-      "markdown_head": "This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it ",
-      "markdown_sha256": "0a080719be9fbb82",
-      "output_step": {
-        "source_url": "https://example.com/",
-        "markdown_equals_data_markdown": true
-      },
-      "note": "Fired together with 3 other runs; the run-level status field was never finalized although every step, including the Output step, succeeded. A sequential re-run is listed separately."
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
     },
     {
-      "input_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview?utm_source=activepieces-demo",
-      "http_request_url": "https://md.replynodes.com/https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview?utm_source=activepieces-demo",
-      "run_status": "SUCCEEDED",
-      "branch_taken": [
-        "OK (2xx): output Markdown"
-      ],
-      "http_status": 200,
-      "title": "Overview of HTTP - HTTP | MDN",
-      "data_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
-      "markdown_chars": 20409,
-      "markdown_head": "# Overview of HTTP\n\n\n**HTTP** is a [protocol](https://developer.mozilla.org/en-US/docs/Glossary/Protocol) for fetching r",
-      "markdown_sha256": "1530827675deb1a7",
-      "output_step": {
-        "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
-        "markdown_equals_data_markdown": true
-      }
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
     },
     {
-      "input_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
-      "http_request_url": "https://md.replynodes.com/https://httpbin.org/anything/docs/page?x=1&y=two",
-      "run_status": "SUCCEEDED",
-      "branch_taken": [
-        "OK (2xx): output Markdown"
-      ],
-      "http_status": 200,
-      "title": null,
-      "data_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
-      "markdown_chars": 728,
-      "markdown_head": "{\n  \"args\": {\n    \"x\": \"1\",\n    \"y\": \"two\"\n  },\n  \"headers\": {\n    \"Accept\": \"text/html,application/xhtml+xml,applicatio",
-      "markdown_sha256": "bd968edb3b150cb1",
-      "output_step": {
-        "source_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
-        "markdown_equals_data_markdown": true
-      },
-      "upstream_echo_args": {
-        "x": "1",
-        "y": "two"
-      }
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
     },
     {
-      "input_url": "not-a-url",
-      "http_request_url": "https://md.replynodes.com/not-a-url",
-      "run_status": "SUCCEEDED",
-      "branch_taken": [
-        "400: invalid URL (stop)"
-      ],
-      "http_status": 400,
-      "error_code": "invalid_request",
-      "returned_to_caller": {
-        "status": 400,
-        "body": {
-          "error": "invalid_request",
-          "message": "Send a full public https:// page URL, for example https://example.com/docs?x=1."
-        }
-      }
-    },
-    {
-      "input_url": "https://example.com/",
-      "label": "sequential re-run of the root URL",
-      "http_request_url": "https://md.replynodes.com/https://example.com/",
-      "run_status": "SUCCEEDED",
-      "branch_taken": [
-        "OK (2xx): output Markdown"
-      ],
-      "http_status": 200,
-      "title": "Example Domain",
-      "output_step": {
-        "source_url": "https://example.com/",
-        "markdown_equals_data_markdown": true
-      }
+     "step": "step_4",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
     }
-  ]
+   ],
+   "http_request_url": "https://md.replynodes.com/https://example.com/",
+   "http_accept_header": "application/json",
+   "http_status": 200,
+   "title": "Example Domain",
+   "data_url": "https://example.com/",
+   "markdown_chars": 156,
+   "output_step": {
+    "source_url": "https://example.com/",
+    "markdown_chars": 156,
+    "markdown_nonempty": true,
+    "markdown_head": "This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it ",
+    "markdown_sha256_16": "0a080719be9fbb82",
+    "markdown_equals_data_markdown": true
+   }
+  },
+  {
+   "label": "real path + query",
+   "input_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview?utm_source=activepieces-demo",
+   "caller_http_status": 204,
+   "run_status": "SUCCEEDED",
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
+    },
+    {
+     "step": "step_4",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "http_request_url": "https://md.replynodes.com/https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview?utm_source=activepieces-demo",
+   "http_accept_header": "application/json",
+   "http_status": 200,
+   "title": "Overview of HTTP - HTTP | MDN",
+   "data_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+   "markdown_chars": 20409,
+   "output_step": {
+    "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+    "markdown_chars": 20409,
+    "markdown_nonempty": true,
+    "markdown_head": "# Overview of HTTP\n\n\n**HTTP** is a [protocol](https://developer.mozilla.org/en-US/docs/Glossary/Protocol) for fetching r",
+    "markdown_sha256_16": "1530827675deb1a7",
+    "markdown_equals_data_markdown": true
+   }
+  },
+  {
+   "label": "query-preservation probe (echoes args)",
+   "input_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
+   "caller_http_status": 204,
+   "run_status": "SUCCEEDED",
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
+    },
+    {
+     "step": "step_4",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "http_request_url": "https://md.replynodes.com/https://httpbin.org/anything/docs/page?x=1&y=two",
+   "http_accept_header": "application/json",
+   "http_status": 200,
+   "title": null,
+   "data_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
+   "markdown_chars": 728,
+   "output_step": {
+    "source_url": "https://httpbin.org/anything/docs/page?x=1&y=two",
+    "markdown_chars": 728,
+    "markdown_nonempty": true,
+    "markdown_head": "{\n  \"args\": {\n    \"x\": \"1\",\n    \"y\": \"two\"\n  },\n  \"headers\": {\n    \"Accept\": \"text/html,application/xhtml+xml,applicatio",
+    "markdown_sha256_16": "bd968edb3b150cb1",
+    "markdown_equals_data_markdown": true
+   },
+   "upstream_echo_args_in_markdown": true
+  },
+  {
+   "label": "real 400",
+   "input_url": "not-a-url",
+   "caller_http_status": 400,
+   "caller_body": {
+    "error": "invalid_request",
+    "message": "Send a full public https:// page URL, for example https://example.com/docs?x=1.",
+    "upstream": {
+     "error": {
+      "code": "invalid_request",
+      "message": "Invalid markdown target. Put the page URL after the host, for example https://md.replynodes.com/https://example.com/page or https://md.replynodes.com/example.com/page.",
+      "retryable": false,
+      "reason": "malformed_url"
+     }
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "400: invalid URL (stop)"
+     ]
+    },
+    {
+     "step": "step_5",
+     "name": "Stop: 400 invalid_request",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "http_request_url": "https://md.replynodes.com/not-a-url",
+   "http_accept_header": "application/json",
+   "http_status": 400
+  }
+ ]
 }
