@@ -1,0 +1,75 @@
+{
+  "kind": "activepieces-import-provenance",
+  "date_utc": "2026-10-29",
+  "sanitized": true,
+  "source": {
+    "path": "examples/markdown/activepieces/url-to-markdown.flow.json",
+    "sha256": "6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc",
+    "bytes": 38383,
+    "commit_at_import": "643eee7d985c0c3e84d1a1ef263051b601921148"
+  },
+  "import_file": {
+    "name": "url-to-markdown.flow.sha256-6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc.json",
+    "sha256": "6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc",
+    "bytes": 38383,
+    "byte_identical_to_source": true,
+    "how_made": "cp url-to-markdown.flow.json url-to-markdown.flow.sha256-6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc.json (staged under the user home because the snap Chromium reads size 0 from /tmp)",
+    "browser_file_input_readback": {
+      "name": "url-to-markdown.flow.sha256-6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc.json",
+      "size": 38383
+    }
+  },
+  "instance": {
+    "image": "activepieces/activepieces:latest",
+    "image_digest": "sha256:65ea85f5e7ea236416b342eef0d2dbade8da51247aaea495d191eb027095805a",
+    "version": "0.82.0",
+    "container": "new container (not the one used for the 13 runs), embedded PGLite, local 127.0.0.1 only",
+    "before_import": {
+      "flows": 0,
+      "runs": 0
+    },
+    "new_account_via_web_sign_up": true,
+    "credentials_recorded": false
+  },
+  "ui_steps": [
+    "Automations > Import dialog: file chosen via the browser file input, filename shown in the dialog (evidence/import-ui-1-dialog.png; the field truncates the long name, the full name is in the receipt above)",
+    "Import clicked: browser navigated to the new flow builder (evidence/import-ui-2-flow-imported.png)",
+    "Publish clicked in the UI. Piece metadata had not finished loading, so the flow stayed DISABLED; the container was restarted once (documented in the README), then the enable switch was turned on in the UI. Result: status ENABLED, publishedVersionId set."
+  ],
+  "imported_flow": {
+    "flow_id": "RhU5sZOUPbEc1FfkuCjw8",
+    "display_name": "ReplyNodes - URL to Markdown (keyless)",
+    "published_version_id": "vuWXmZUGNQvL4RnrWQo3L",
+    "published_version_state": "LOCKED",
+    "status_after_ui_enable": "ENABLED"
+  },
+  "readback": {
+    "file": "evidence/import-readback-published-version.json",
+    "endpoint": "GET /api/v1/flows/{flowId}?versionId={publishedVersionId}",
+    "compared_fields": [
+      "displayName",
+      "notes",
+      "schemaVersion",
+      "trigger",
+      "valid"
+    ]
+  },
+  "normalization": {
+    "rule": "remove every object key named lastUpdatedDate (server-written timestamps) from both sides; nothing else is removed or rewritten",
+    "timestamp_keys_removed_per_side": 21,
+    "raw_differences_before_normalization": "only lastUpdatedDate values, nothing else",
+    "source_normalized_sha256": "6f81131c7b12535b77e751458d6da0bf42d9b322e451b6201eaa178288e451f5",
+    "readback_normalized_sha256": "6f81131c7b12535b77e751458d6da0bf42d9b322e451b6201eaa178288e451f5",
+    "graphs_equal": true,
+    "canonical_json": "sort_keys, separators (',',':')"
+  },
+  "limitations": [
+    "Opening the flow in the builder afterwards created an unpublished DRAFT (it added empty trigger authFields); the published version above is the one that was compared and it is unaffected.",
+    "Runs on this instance were not repeated; run evidence stays in real-runs.json and simulated-error-runs.json, which cite the same export SHA.",
+    "The Publish click alone left the flow DISABLED on this brand-new instance (metadata race); the enable switch was used after one restart."
+  ],
+  "linked_runtime_evidence": [
+    "evidence/real-runs.json",
+    "evidence/simulated-error-runs.json"
+  ]
+}

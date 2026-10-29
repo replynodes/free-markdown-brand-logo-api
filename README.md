@@ -58,6 +58,7 @@ Small examples are grouped by outcome. They intentionally use ordinary HTTP clie
 - [Company-list enrichment](examples/brand/company-enrichment.py)
 - [UI/theme context](examples/brand/ui-theme-context.js)
 - [Markdown fetch with status handling](recipes/markdown-fetch.sh)
+- [Activepieces flow: URL → clean Markdown](examples/markdown/activepieces/README.md)
 - [Brand lookup with a cache](recipes/brand-cache.js)
 
 ## Security and limits note

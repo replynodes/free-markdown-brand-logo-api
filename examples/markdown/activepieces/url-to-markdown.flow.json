@@ -1,0 +1,884 @@
+{
+  "name": "ReplyNodes - URL to Markdown (keyless)",
+  "type": "SHARED",
+  "summary": "URL in, clean Markdown out. Keyless, built-in steps only.",
+  "description": "Turn any public page URL into clean Markdown. Send a URL to the webhook, fetch it with the built-in HTTP step from the free ReplyNodes endpoint, then get markdown and source_url back. No API key or account needed.",
+  "tags": [],
+  "blogUrl": "https://github.com/replynodes/free-markdown-brand-logo-api/blob/main/examples/markdown/activepieces/README.md",
+  "metadata": {},
+  "author": "",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-webhook",
+    "@activepieces/piece-data-mapper",
+    "@activepieces/piece-http",
+    "@activepieces/piece-delay"
+  ],
+  "flows": [
+    {
+      "displayName": "ReplyNodes - URL to Markdown (keyless)",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Webhook: receive url",
+        "nextAction": {
+          "name": "step_1",
+          "type": "PIECE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "mapping": {
+                "url": "{{trigger['body']['url']}}"
+              }
+            },
+            "pieceName": "@activepieces/piece-data-mapper",
+            "actionName": "advanced_mapping",
+            "sampleData": {},
+            "pieceVersion": "0.3.21",
+            "propertySettings": {
+              "mapping": {
+                "type": "MANUAL"
+              }
+            }
+          },
+          "displayName": "Input URL",
+          "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "url": "https://md.replynodes.com/{{step_1['url']}}",
+                "method": "GET",
+                "headers": {
+                  "Accept": "application/json"
+                },
+                "timeout": 60,
+                "authType": "NONE",
+                "body_type": "none",
+                "use_proxy": false,
+                "failureMode": "continue_all",
+                "queryParams": {},
+                "followRedirects": false,
+                "response_is_binary": false
+              },
+              "pieceName": "@activepieces/piece-http",
+              "actionName": "send_request",
+              "sampleData": {},
+              "pieceVersion": "0.11.19",
+              "propertySettings": {
+                "url": {
+                  "type": "MANUAL"
+                },
+                "method": {
+                  "type": "MANUAL"
+                },
+                "headers": {
+                  "type": "MANUAL"
+                },
+                "timeout": {
+                  "type": "MANUAL"
+                },
+                "authType": {
+                  "type": "MANUAL"
+                },
+                "body_type": {
+                  "type": "MANUAL"
+                },
+                "use_proxy": {
+                  "type": "MANUAL"
+                },
+                "failureMode": {
+                  "type": "MANUAL"
+                },
+                "queryParams": {
+                  "type": "MANUAL"
+                },
+                "followRedirects": {
+                  "type": "MANUAL"
+                },
+                "response_is_binary": {
+                  "type": "MANUAL"
+                }
+              }
+            },
+            "displayName": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+            "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+            "nextAction": {
+              "name": "step_3",
+              "type": "ROUTER",
+              "valid": true,
+              "children": [
+                {
+                  "name": "step_4",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "mapping": {
+                        "markdown": "{{step_2['body']['data']['markdown']}}",
+                        "source_url": "{{step_2['body']['data']['url']}}"
+                      }
+                    },
+                    "pieceName": "@activepieces/piece-data-mapper",
+                    "actionName": "advanced_mapping",
+                    "sampleData": {},
+                    "pieceVersion": "0.3.21",
+                    "propertySettings": {
+                      "mapping": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Output: markdown + source_url",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                },
+                {
+                  "name": "step_5",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "fields": {
+                        "body": {
+                          "error": "invalid_request",
+                          "message": "Send a full public https:// page URL, for example https://example.com/docs?x=1.",
+                          "upstream": "{{step_2['response']['body']}}"
+                        },
+                        "status": "{{step_2['response']['status']}}",
+                        "headers": {}
+                      },
+                      "respond": "stop",
+                      "responseType": "json"
+                    },
+                    "pieceName": "@activepieces/piece-webhook",
+                    "actionName": "return_response",
+                    "sampleData": {},
+                    "pieceVersion": "0.1.43",
+                    "propertySettings": {
+                      "fields": {
+                        "type": "DYNAMIC"
+                      },
+                      "respond": {
+                        "type": "MANUAL"
+                      },
+                      "responseType": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Stop: 400 invalid_request",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                },
+                {
+                  "name": "step_6",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "fields": {
+                        "body": {
+                          "error": "anonymous_limit_reached",
+                          "message": "Free keyless limit reached (100 requests per day per IP bucket, UTC day). Not retried. The quota resets at 00:00 UTC. A free account with 500 credits: https://platform.replynodes.com/sign-up",
+                          "upstream": "{{step_2['response']['body']}}"
+                        },
+                        "status": "{{step_2['response']['status']}}",
+                        "headers": {}
+                      },
+                      "respond": "stop",
+                      "responseType": "json"
+                    },
+                    "pieceName": "@activepieces/piece-webhook",
+                    "actionName": "return_response",
+                    "sampleData": {},
+                    "pieceVersion": "0.1.43",
+                    "propertySettings": {
+                      "fields": {
+                        "type": "DYNAMIC"
+                      },
+                      "respond": {
+                        "type": "MANUAL"
+                      },
+                      "responseType": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Stop: 429 anonymous_limit_reached",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                },
+                {
+                  "name": "step_7",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "fields": {
+                        "body": {
+                          "error": "unavailable_for_legal_reasons",
+                          "message": "The publisher has excluded this page. Use a different page.",
+                          "upstream": "{{step_2['response']['body']}}"
+                        },
+                        "status": "{{step_2['response']['status']}}",
+                        "headers": {}
+                      },
+                      "respond": "stop",
+                      "responseType": "json"
+                    },
+                    "pieceName": "@activepieces/piece-webhook",
+                    "actionName": "return_response",
+                    "sampleData": {},
+                    "pieceVersion": "0.1.43",
+                    "propertySettings": {
+                      "fields": {
+                        "type": "DYNAMIC"
+                      },
+                      "respond": {
+                        "type": "MANUAL"
+                      },
+                      "responseType": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Stop: 451 excluded by publisher",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                },
+                {
+                  "name": "step_8",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "unit": "seconds",
+                      "delayFor": 2
+                    },
+                    "pieceName": "@activepieces/piece-delay",
+                    "actionName": "delayFor",
+                    "sampleData": {},
+                    "pieceVersion": "0.3.34",
+                    "propertySettings": {
+                      "unit": {
+                        "type": "MANUAL"
+                      },
+                      "delayFor": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Wait before attempt 2",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                  "nextAction": {
+                    "name": "step_9",
+                    "type": "PIECE",
+                    "valid": true,
+                    "settings": {
+                      "input": {
+                        "url": "https://md.replynodes.com/{{step_1['url']}}",
+                        "method": "GET",
+                        "headers": {
+                          "Accept": "application/json"
+                        },
+                        "timeout": 60,
+                        "authType": "NONE",
+                        "body_type": "none",
+                        "use_proxy": false,
+                        "failureMode": "continue_all",
+                        "queryParams": {},
+                        "followRedirects": false,
+                        "response_is_binary": false
+                      },
+                      "pieceName": "@activepieces/piece-http",
+                      "actionName": "send_request",
+                      "sampleData": {},
+                      "pieceVersion": "0.11.19",
+                      "propertySettings": {
+                        "url": {
+                          "type": "MANUAL"
+                        },
+                        "method": {
+                          "type": "MANUAL"
+                        },
+                        "headers": {
+                          "type": "MANUAL"
+                        },
+                        "timeout": {
+                          "type": "MANUAL"
+                        },
+                        "authType": {
+                          "type": "MANUAL"
+                        },
+                        "body_type": {
+                          "type": "MANUAL"
+                        },
+                        "use_proxy": {
+                          "type": "MANUAL"
+                        },
+                        "failureMode": {
+                          "type": "MANUAL"
+                        },
+                        "queryParams": {
+                          "type": "MANUAL"
+                        },
+                        "followRedirects": {
+                          "type": "MANUAL"
+                        },
+                        "response_is_binary": {
+                          "type": "MANUAL"
+                        }
+                      }
+                    },
+                    "displayName": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+                    "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                    "nextAction": {
+                      "name": "step_10",
+                      "type": "ROUTER",
+                      "valid": true,
+                      "children": [
+                        {
+                          "name": "step_11",
+                          "type": "PIECE",
+                          "valid": true,
+                          "settings": {
+                            "input": {
+                              "mapping": {
+                                "markdown": "{{step_9['body']['data']['markdown']}}",
+                                "source_url": "{{step_9['body']['data']['url']}}"
+                              }
+                            },
+                            "pieceName": "@activepieces/piece-data-mapper",
+                            "actionName": "advanced_mapping",
+                            "sampleData": {},
+                            "pieceVersion": "0.3.21",
+                            "propertySettings": {
+                              "mapping": {
+                                "type": "MANUAL"
+                              }
+                            }
+                          },
+                          "displayName": "Output: markdown + source_url",
+                          "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                        },
+                        {
+                          "name": "step_12",
+                          "type": "PIECE",
+                          "valid": true,
+                          "settings": {
+                            "input": {
+                              "fields": {
+                                "body": {
+                                  "error": "anonymous_limit_reached",
+                                  "message": "Free keyless limit reached (100 requests per day per IP bucket, UTC day). Not retried. The quota resets at 00:00 UTC. A free account with 500 credits: https://platform.replynodes.com/sign-up",
+                                  "upstream": "{{step_9['response']['body']}}"
+                                },
+                                "status": "{{step_9['response']['status']}}",
+                                "headers": {}
+                              },
+                              "respond": "stop",
+                              "responseType": "json"
+                            },
+                            "pieceName": "@activepieces/piece-webhook",
+                            "actionName": "return_response",
+                            "sampleData": {},
+                            "pieceVersion": "0.1.43",
+                            "propertySettings": {
+                              "fields": {
+                                "type": "DYNAMIC"
+                              },
+                              "respond": {
+                                "type": "MANUAL"
+                              },
+                              "responseType": {
+                                "type": "MANUAL"
+                              }
+                            }
+                          },
+                          "displayName": "Stop: 429 anonymous_limit_reached",
+                          "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                        },
+                        {
+                          "name": "step_13",
+                          "type": "PIECE",
+                          "valid": true,
+                          "settings": {
+                            "input": {
+                              "unit": "seconds",
+                              "delayFor": 2
+                            },
+                            "pieceName": "@activepieces/piece-delay",
+                            "actionName": "delayFor",
+                            "sampleData": {},
+                            "pieceVersion": "0.3.34",
+                            "propertySettings": {
+                              "unit": {
+                                "type": "MANUAL"
+                              },
+                              "delayFor": {
+                                "type": "MANUAL"
+                              }
+                            }
+                          },
+                          "displayName": "Wait before attempt 3",
+                          "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                          "nextAction": {
+                            "name": "step_14",
+                            "type": "PIECE",
+                            "valid": true,
+                            "settings": {
+                              "input": {
+                                "url": "https://md.replynodes.com/{{step_1['url']}}",
+                                "method": "GET",
+                                "headers": {
+                                  "Accept": "application/json"
+                                },
+                                "timeout": 60,
+                                "authType": "NONE",
+                                "body_type": "none",
+                                "use_proxy": false,
+                                "failureMode": "continue_all",
+                                "queryParams": {},
+                                "followRedirects": false,
+                                "response_is_binary": false
+                              },
+                              "pieceName": "@activepieces/piece-http",
+                              "actionName": "send_request",
+                              "sampleData": {},
+                              "pieceVersion": "0.11.19",
+                              "propertySettings": {
+                                "url": {
+                                  "type": "MANUAL"
+                                },
+                                "method": {
+                                  "type": "MANUAL"
+                                },
+                                "headers": {
+                                  "type": "MANUAL"
+                                },
+                                "timeout": {
+                                  "type": "MANUAL"
+                                },
+                                "authType": {
+                                  "type": "MANUAL"
+                                },
+                                "body_type": {
+                                  "type": "MANUAL"
+                                },
+                                "use_proxy": {
+                                  "type": "MANUAL"
+                                },
+                                "failureMode": {
+                                  "type": "MANUAL"
+                                },
+                                "queryParams": {
+                                  "type": "MANUAL"
+                                },
+                                "followRedirects": {
+                                  "type": "MANUAL"
+                                },
+                                "response_is_binary": {
+                                  "type": "MANUAL"
+                                }
+                              }
+                            },
+                            "displayName": "ReplyNodes Markdown (HTTP GET, attempt 3 of 3)",
+                            "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                            "nextAction": {
+                              "name": "step_15",
+                              "type": "ROUTER",
+                              "valid": true,
+                              "children": [
+                                {
+                                  "name": "step_16",
+                                  "type": "PIECE",
+                                  "valid": true,
+                                  "settings": {
+                                    "input": {
+                                      "mapping": {
+                                        "markdown": "{{step_14['body']['data']['markdown']}}",
+                                        "source_url": "{{step_14['body']['data']['url']}}"
+                                      }
+                                    },
+                                    "pieceName": "@activepieces/piece-data-mapper",
+                                    "actionName": "advanced_mapping",
+                                    "sampleData": {},
+                                    "pieceVersion": "0.3.21",
+                                    "propertySettings": {
+                                      "mapping": {
+                                        "type": "MANUAL"
+                                      }
+                                    }
+                                  },
+                                  "displayName": "Output: markdown + source_url",
+                                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                                },
+                                {
+                                  "name": "step_17",
+                                  "type": "PIECE",
+                                  "valid": true,
+                                  "settings": {
+                                    "input": {
+                                      "fields": {
+                                        "body": {
+                                          "error": "anonymous_limit_reached",
+                                          "message": "Free keyless limit reached (100 requests per day per IP bucket, UTC day). Not retried. The quota resets at 00:00 UTC. A free account with 500 credits: https://platform.replynodes.com/sign-up",
+                                          "upstream": "{{step_14['response']['body']}}"
+                                        },
+                                        "status": "{{step_14['response']['status']}}",
+                                        "headers": {}
+                                      },
+                                      "respond": "stop",
+                                      "responseType": "json"
+                                    },
+                                    "pieceName": "@activepieces/piece-webhook",
+                                    "actionName": "return_response",
+                                    "sampleData": {},
+                                    "pieceVersion": "0.1.43",
+                                    "propertySettings": {
+                                      "fields": {
+                                        "type": "DYNAMIC"
+                                      },
+                                      "respond": {
+                                        "type": "MANUAL"
+                                      },
+                                      "responseType": {
+                                        "type": "MANUAL"
+                                      }
+                                    }
+                                  },
+                                  "displayName": "Stop: 429 anonymous_limit_reached",
+                                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                                },
+                                {
+                                  "name": "step_18",
+                                  "type": "PIECE",
+                                  "valid": true,
+                                  "settings": {
+                                    "input": {
+                                      "fields": {
+                                        "body": "{{step_14['response']['body']}}",
+                                        "status": "{{step_14['response']['status']}}",
+                                        "headers": {}
+                                      },
+                                      "respond": "stop",
+                                      "responseType": "json"
+                                    },
+                                    "pieceName": "@activepieces/piece-webhook",
+                                    "actionName": "return_response",
+                                    "sampleData": {},
+                                    "pieceVersion": "0.1.43",
+                                    "propertySettings": {
+                                      "fields": {
+                                        "type": "DYNAMIC"
+                                      },
+                                      "respond": {
+                                        "type": "MANUAL"
+                                      },
+                                      "responseType": {
+                                        "type": "MANUAL"
+                                      }
+                                    }
+                                  },
+                                  "displayName": "Stop: attempts exhausted or other error",
+                                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                                }
+                              ],
+                              "displayName": "Route attempt 3 (last)",
+                              "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                              "settings": {
+                                "branches": [
+                                  {
+                                    "branchName": "OK (2xx): output Markdown",
+                                    "branchType": "CONDITION",
+                                    "conditions": [
+                                      [
+                                        {
+                                          "operator": "NUMBER_IS_GREATER_THAN",
+                                          "firstValue": "{{step_14?.status}}",
+                                          "secondValue": "199"
+                                        },
+                                        {
+                                          "operator": "NUMBER_IS_LESS_THAN",
+                                          "firstValue": "{{step_14?.status}}",
+                                          "secondValue": "300"
+                                        }
+                                      ]
+                                    ]
+                                  },
+                                  {
+                                    "branchName": "429: daily keyless limit (stop, no retry)",
+                                    "branchType": "CONDITION",
+                                    "conditions": [
+                                      [
+                                        {
+                                          "operator": "NUMBER_IS_EQUAL_TO",
+                                          "firstValue": "{{step_14?.response?.status}}",
+                                          "secondValue": "429"
+                                        }
+                                      ]
+                                    ]
+                                  },
+                                  {
+                                    "branchName": "Attempts exhausted or other error (stop, status and body passed through)",
+                                    "branchType": "FALLBACK"
+                                  }
+                                ],
+                                "sampleData": {},
+                                "executionType": "EXECUTE_FIRST_MATCH"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "name": "step_19",
+                          "type": "PIECE",
+                          "valid": true,
+                          "settings": {
+                            "input": {
+                              "fields": {
+                                "body": "{{step_9['response']['body']}}",
+                                "status": "{{step_9['response']['status']}}",
+                                "headers": {}
+                              },
+                              "respond": "stop",
+                              "responseType": "json"
+                            },
+                            "pieceName": "@activepieces/piece-webhook",
+                            "actionName": "return_response",
+                            "sampleData": {},
+                            "pieceVersion": "0.1.43",
+                            "propertySettings": {
+                              "fields": {
+                                "type": "DYNAMIC"
+                              },
+                              "respond": {
+                                "type": "MANUAL"
+                              },
+                              "responseType": {
+                                "type": "MANUAL"
+                              }
+                            }
+                          },
+                          "displayName": "Stop: other error",
+                          "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                        }
+                      ],
+                      "displayName": "Route attempt 2",
+                      "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+                      "settings": {
+                        "branches": [
+                          {
+                            "branchName": "OK (2xx): output Markdown",
+                            "branchType": "CONDITION",
+                            "conditions": [
+                              [
+                                {
+                                  "operator": "NUMBER_IS_GREATER_THAN",
+                                  "firstValue": "{{step_9?.status}}",
+                                  "secondValue": "199"
+                                },
+                                {
+                                  "operator": "NUMBER_IS_LESS_THAN",
+                                  "firstValue": "{{step_9?.status}}",
+                                  "secondValue": "300"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "branchName": "429: daily keyless limit (stop, no retry)",
+                            "branchType": "CONDITION",
+                            "conditions": [
+                              [
+                                {
+                                  "operator": "NUMBER_IS_EQUAL_TO",
+                                  "firstValue": "{{step_9?.response?.status}}",
+                                  "secondValue": "429"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "branchName": "Retry: 5xx with retryable true (bounded)",
+                            "branchType": "CONDITION",
+                            "conditions": [
+                              [
+                                {
+                                  "operator": "NUMBER_IS_GREATER_THAN",
+                                  "firstValue": "{{step_9?.response?.status}}",
+                                  "secondValue": "499"
+                                },
+                                {
+                                  "operator": "NUMBER_IS_LESS_THAN",
+                                  "firstValue": "{{step_9?.response?.status}}",
+                                  "secondValue": "600"
+                                },
+                                {
+                                  "operator": "BOOLEAN_IS_TRUE",
+                                  "firstValue": "{{step_9?.response?.body?.error?.retryable}}"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "branchName": "Other error (stop, status and body passed through)",
+                            "branchType": "FALLBACK"
+                          }
+                        ],
+                        "sampleData": {},
+                        "executionType": "EXECUTE_FIRST_MATCH"
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "step_20",
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "fields": {
+                        "body": "{{step_2['response']['body']}}",
+                        "status": "{{step_2['response']['status']}}",
+                        "headers": {}
+                      },
+                      "respond": "stop",
+                      "responseType": "json"
+                    },
+                    "pieceName": "@activepieces/piece-webhook",
+                    "actionName": "return_response",
+                    "sampleData": {},
+                    "pieceVersion": "0.1.43",
+                    "propertySettings": {
+                      "fields": {
+                        "type": "DYNAMIC"
+                      },
+                      "respond": {
+                        "type": "MANUAL"
+                      },
+                      "responseType": {
+                        "type": "MANUAL"
+                      }
+                    }
+                  },
+                  "displayName": "Stop: other error",
+                  "lastUpdatedDate": "2026-10-29T08:00:00.000Z"
+                }
+              ],
+              "displayName": "Route attempt 1",
+              "lastUpdatedDate": "2026-10-29T08:00:00.000Z",
+              "settings": {
+                "branches": [
+                  {
+                    "branchName": "OK (2xx): output Markdown",
+                    "branchType": "CONDITION",
+                    "conditions": [
+                      [
+                        {
+                          "operator": "NUMBER_IS_GREATER_THAN",
+                          "firstValue": "{{step_2?.status}}",
+                          "secondValue": "199"
+                        },
+                        {
+                          "operator": "NUMBER_IS_LESS_THAN",
+                          "firstValue": "{{step_2?.status}}",
+                          "secondValue": "300"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "branchName": "400: invalid URL (stop)",
+                    "branchType": "CONDITION",
+                    "conditions": [
+                      [
+                        {
+                          "operator": "NUMBER_IS_EQUAL_TO",
+                          "firstValue": "{{step_2?.response?.status}}",
+                          "secondValue": "400"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "branchName": "429: daily keyless limit (stop, no retry)",
+                    "branchType": "CONDITION",
+                    "conditions": [
+                      [
+                        {
+                          "operator": "NUMBER_IS_EQUAL_TO",
+                          "firstValue": "{{step_2?.response?.status}}",
+                          "secondValue": "429"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "branchName": "451: page excluded by publisher (stop)",
+                    "branchType": "CONDITION",
+                    "conditions": [
+                      [
+                        {
+                          "operator": "NUMBER_IS_EQUAL_TO",
+                          "firstValue": "{{step_2?.response?.status}}",
+                          "secondValue": "451"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "branchName": "Retry: 5xx with retryable true (bounded)",
+                    "branchType": "CONDITION",
+                    "conditions": [
+                      [
+                        {
+                          "operator": "NUMBER_IS_GREATER_THAN",
+                          "firstValue": "{{step_2?.response?.status}}",
+                          "secondValue": "499"
+                        },
+                        {
+                          "operator": "NUMBER_IS_LESS_THAN",
+                          "firstValue": "{{step_2?.response?.status}}",
+                          "secondValue": "600"
+                        },
+                        {
+                          "operator": "BOOLEAN_IS_TRUE",
+                          "firstValue": "{{step_2?.response?.body?.error?.retryable}}"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "branchName": "Other error (stop, status and body passed through)",
+                    "branchType": "FALLBACK"
+                  }
+                ],
+                "sampleData": {},
+                "executionType": "EXECUTE_FIRST_MATCH"
+              }
+            }
+          }
+        },
+        "lastUpdatedDate": "2026-10-29T05:08:38.112Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "authType": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-webhook",
+          "pieceVersion": "0.1.43",
+          "triggerName": "catch_webhook",
+          "input": {
+            "authType": "none"
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}

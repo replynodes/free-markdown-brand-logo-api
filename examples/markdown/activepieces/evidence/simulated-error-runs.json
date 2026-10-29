@@ -1,0 +1,764 @@
+{
+ "kind": "SIMULATED (mock) error runs. NOT observed on the live service.",
+ "date_utc": "2026-10-29",
+ "export_sha256": "6b68a2b6f6bf23ee2f85e1cdb5b93567332a88976ee679e41225c10fb71ec5bc",
+ "environment": "Activepieces Community Edition 0.82.0, self-hosted Docker (activepieces/activepieces:latest, digest sha256:65ea85f5e7ea236416b342eef0d2dbade8da51247aaea495d191eb027095805a), embedded PGLite database, in-memory queue, UNSANDBOXED execution mode, local only. Built-in pieces: Webhook 0.1.43, Data Mapper 0.3.21, HTTP 0.11.19, Delay 0.3.34.",
+ "method": "The final export was imported (API IMPORT_FLOW, same operation as the UI) into the same fresh instance as a second flow named mock-copy, with ONLY the base URL replaced by http://127.0.0.1:18999 (a local mock; verified by diff: no other byte differs). The mock returns scripted responses in the live service's error envelope shape {error:{code,message,request_id,retryable,reason?}}. Error code names for 451 and 5xx are illustrative.",
+ "expected": {
+  "400": "400 branch, 1 request",
+  "429": "429 branch, 1 request, no retry",
+  "451": "451 branch, 1 request",
+  "502-blocked-false": "retryable false -> no retry, 1 request",
+  "502-empty-false": "retryable false, reason empty_content -> no retry, 1 request",
+  "503-retryable-then-200": "2 requests, output",
+  "503-retryable-twice-then-200": "3 requests, output",
+  "503-retryable-always": "exactly 3 requests then 503 passed through",
+  "502-retryable-true": "exactly 3 requests then 502 passed through",
+  "503-no-retryable-field": "absent retryable -> no retry, 1 request",
+  "503-then-429": "retry once then 429 branch, no further retry, 2 requests",
+  "403": "other error pass-through, 1 request",
+  "ok": "1 request, output"
+ },
+ "runs": [
+  {
+   "mock_case": "400",
+   "caller_http_status": 400,
+   "caller_body": {
+    "error": "invalid_request",
+    "message": "Send a full public https:// page URL, for example https://example.com/docs?x=1.",
+    "upstream": {
+     "error": {
+      "code": "invalid_request",
+      "message": "mock invalid_request",
+      "retryable": false,
+      "reason": "malformed_url"
+     }
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 0.7,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "400: invalid URL (stop)"
+     ]
+    },
+    {
+     "step": "step_5",
+     "name": "Stop: 400 invalid_request",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/400/page?x=1"
+  },
+  {
+   "mock_case": "429",
+   "caller_http_status": 429,
+   "caller_body": {
+    "error": "anonymous_limit_reached",
+    "message": "Free keyless limit reached (100 requests per day per IP bucket, UTC day). Not retried. The quota resets at 00:00 UTC. A free account with 500 credits: https://platform.replynodes.com/sign-up",
+    "upstream": {
+     "error": {
+      "code": "anonymous_limit_reached",
+      "message": "mock anonymous_limit_reached",
+      "retryable": false
+     }
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 0.4,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "429: daily keyless limit (stop, no retry)"
+     ]
+    },
+    {
+     "step": "step_6",
+     "name": "Stop: 429 anonymous_limit_reached",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/429/page?x=1"
+  },
+  {
+   "mock_case": "451",
+   "caller_http_status": 451,
+   "caller_body": {
+    "error": "unavailable_for_legal_reasons",
+    "message": "The publisher has excluded this page. Use a different page.",
+    "upstream": {
+     "error": {
+      "code": "unavailable_for_legal_reasons",
+      "message": "mock unavailable_for_legal_reasons",
+      "retryable": false
+     }
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 2.3,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "451: page excluded by publisher (stop)"
+     ]
+    },
+    {
+     "step": "step_7",
+     "name": "Stop: 451 excluded by publisher",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/451/page?x=1"
+  },
+  {
+   "mock_case": "502-blocked-false",
+   "caller_http_status": 502,
+   "caller_body": {
+    "error": {
+     "code": "upstream_blocked",
+     "message": "mock upstream_blocked",
+     "retryable": false
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 1.1,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_20",
+     "name": "Stop: other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/502-blocked-false/page?x=1"
+  },
+  {
+   "mock_case": "502-empty-false",
+   "caller_http_status": 502,
+   "caller_body": {
+    "error": {
+     "code": "upstream_unavailable",
+     "message": "mock upstream_unavailable",
+     "retryable": false,
+     "reason": "empty_content"
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 1.9,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_20",
+     "name": "Stop: other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/502-empty-false/page?x=1"
+  },
+  {
+   "mock_case": "503-retryable-then-200",
+   "caller_http_status": 204,
+   "caller_body": null,
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 2,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 30.1,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_8",
+     "name": "Wait before attempt 2",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_9",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_10",
+     "name": "Route attempt 2",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
+    },
+    {
+     "step": "step_11",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/503-retryable-then-200/page?x=1"
+  },
+  {
+   "mock_case": "503-retryable-twice-then-200",
+   "caller_http_status": 204,
+   "caller_body": null,
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 3,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 31.0,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_8",
+     "name": "Wait before attempt 2",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_9",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_10",
+     "name": "Route attempt 2",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_13",
+     "name": "Wait before attempt 3",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_14",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 3 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_15",
+     "name": "Route attempt 3 (last)",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
+    },
+    {
+     "step": "step_16",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/503-retryable-twice-then-200/page?x=1"
+  },
+  {
+   "mock_case": "503-retryable-always",
+   "caller_http_status": 503,
+   "caller_body": {
+    "error": {
+     "code": "service_unavailable",
+     "message": "mock service_unavailable",
+     "retryable": true
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 3,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 7.2,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_8",
+     "name": "Wait before attempt 2",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_9",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_10",
+     "name": "Route attempt 2",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_13",
+     "name": "Wait before attempt 3",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_14",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 3 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_15",
+     "name": "Route attempt 3 (last)",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Attempts exhausted or other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_18",
+     "name": "Stop: attempts exhausted or other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/503-retryable-always/page?x=1"
+  },
+  {
+   "mock_case": "502-retryable-true",
+   "caller_http_status": 502,
+   "caller_body": {
+    "error": {
+     "code": "upstream_error",
+     "message": "mock upstream_error",
+     "retryable": true
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 3,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 6.7,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_8",
+     "name": "Wait before attempt 2",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_9",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_10",
+     "name": "Route attempt 2",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_13",
+     "name": "Wait before attempt 3",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_14",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 3 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_15",
+     "name": "Route attempt 3 (last)",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Attempts exhausted or other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_18",
+     "name": "Stop: attempts exhausted or other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/502-retryable-true/page?x=1"
+  },
+  {
+   "mock_case": "503-no-retryable-field",
+   "caller_http_status": 503,
+   "caller_body": {
+    "error": {
+     "code": "service_unavailable"
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 0.6,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_20",
+     "name": "Stop: other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/503-no-retryable-field/page?x=1"
+  },
+  {
+   "mock_case": "503-then-429",
+   "caller_http_status": 429,
+   "caller_body": {
+    "error": "anonymous_limit_reached",
+    "message": "Free keyless limit reached (100 requests per day per IP bucket, UTC day). Not retried. The quota resets at 00:00 UTC. A free account with 500 credits: https://platform.replynodes.com/sign-up",
+    "upstream": {
+     "error": {
+      "code": "anonymous_limit_reached",
+      "message": "mock anonymous_limit_reached",
+      "retryable": false
+     }
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 2,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 4.1,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Retry: 5xx with retryable true (bounded)"
+     ]
+    },
+    {
+     "step": "step_8",
+     "name": "Wait before attempt 2",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_9",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 2 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_10",
+     "name": "Route attempt 2",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "429: daily keyless limit (stop, no retry)"
+     ]
+    },
+    {
+     "step": "step_12",
+     "name": "Stop: 429 anonymous_limit_reached",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/503-then-429/page?x=1"
+  },
+  {
+   "mock_case": "403",
+   "caller_http_status": 403,
+   "caller_body": {
+    "error": {
+     "code": "forbidden",
+     "message": "mock forbidden",
+     "retryable": false
+    }
+   },
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 1.6,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "Other error (stop, status and body passed through)"
+     ]
+    },
+    {
+     "step": "step_20",
+     "name": "Stop: other error",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/403/page?x=1"
+  },
+  {
+   "mock_case": "ok",
+   "caller_http_status": 204,
+   "caller_body": null,
+   "run_status": "SUCCEEDED",
+   "mock_requests_received": 1,
+   "accept_header_seen": [
+    "application/json"
+   ],
+   "authorization_header_seen": [
+    "None"
+   ],
+   "elapsed_s": 30.5,
+   "path": [
+    {
+     "step": "step_1",
+     "name": "Input URL",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_2",
+     "name": "ReplyNodes Markdown (HTTP GET, attempt 1 of 3)",
+     "status": "SUCCEEDED"
+    },
+    {
+     "step": "step_3",
+     "name": "Route attempt 1",
+     "status": "SUCCEEDED",
+     "branch_taken": [
+      "OK (2xx): output Markdown"
+     ]
+    },
+    {
+     "step": "step_4",
+     "name": "Output: markdown + source_url",
+     "status": "SUCCEEDED"
+    }
+   ],
+   "request_path_template": "/https://mock.test/ok/page?x=1"
+  }
+ ]
+}
