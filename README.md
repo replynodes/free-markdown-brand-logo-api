@@ -51,6 +51,7 @@ Small examples are grouped by outcome. They intentionally use ordinary HTTP clie
 - [RAG ingestion](examples/markdown/rag-ingestion.py)
 - [Website research input](examples/markdown/website-research.sh)
 - [Competitor research input](examples/markdown/competitor-research.sh)
+- [n8n workflow: URL → clean Markdown](examples/markdown/n8n-url-to-markdown.md)
 - [Domain → logo](examples/logo/domain-to-logo.sh)
 - [React / Next.js company-logo component](examples/logo/company-logo.tsx)
 - [Clearbit Logo API migration](examples/logo/clearbit-migration.md)
