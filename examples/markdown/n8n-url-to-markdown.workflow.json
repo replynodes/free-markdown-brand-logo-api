@@ -1,0 +1,305 @@
+{
+  "name": "ReplyNodes: any URL to clean Markdown (keyless)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000000-0000-4000-8000-000000000001",
+              "name": "url",
+              "value": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview?utm_source=n8n-demo",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000002",
+      "name": "Input URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://md.replynodes.com/' + $('Input URL').first().json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000003",
+      "name": "ReplyNodes Markdown",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c1000000-0000-4000-8000-000000000001",
+                    "leftValue": "={{ $json.statusCode >= 200 && $json.statusCode < 300 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OK (2xx)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c1000000-0000-4000-8000-000000000002",
+                    "leftValue": "={{ $json.statusCode >= 500 && $json.body?.error?.retryable === true && $runIndex < 2 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Retryable 5xx (max 2 retries)"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Stop (4xx / 451 / 502 / retries used)"
+        }
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000004",
+      "name": "Route response",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2000000-0000-4000-8000-000000000001",
+              "name": "markdown",
+              "value": "={{ $json.body.data.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "a2000000-0000-4000-8000-000000000002",
+              "name": "source_url",
+              "value": "={{ $json.body.data.url || $('Input URL').first().json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000005",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000006",
+      "name": "Wait 2s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        112
+      ],
+      "webhookId": "5d1f1a52-0c1d-4a55-9a60-000000000006"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ (() => {\n  const s = $json.statusCode;\n  const e = ($json.body && $json.body.error) || {};\n  const h = $json.headers || {};\n  const tag = 'ReplyNodes Markdown HTTP ' + s + ' ' + (e.code || 'unknown_error') + (e.reason ? ' (' + e.reason + ')' : '') + ': ';\n  if (s === 400) return tag + 'the url is not a valid public http(s) page URL. Fix the url in the Input URL node. Not retried.';\n  if (s === 429) {\n    const r = Number(h['x-ratelimit-reset']);\n    const when = r ? new Date(r * 1000).toISOString() : 'unknown (no x-ratelimit-reset header)';\n    return tag + 'keyless daily limit (100/day, shared by everyone behind the same egress IP) reached. Stopped, not retrying. Quota resets at ' + when + ' (UTC). Or create a free account (500 credits): https://platform.replynodes.com/sign-up';\n  }\n  if (s === 451) return tag + 'the publisher has excluded this page, so it cannot be returned. Not retried. Try a different page.';\n  if (s === 502 && e.code === 'upstream_blocked') return tag + 'the target site blocked the fetch. Not retried. Try a different page.';\n  if (s === 502 && e.reason === 'empty_content') return tag + 'the page returned no extractable content (for example a JavaScript-only page). Not retried.';\n  if (s >= 500 && e.retryable === true) return tag + 'still failing after 3 attempts (2 bounded retries). Try again later.';\n  if (s >= 500) return tag + 'upstream error that is not marked retryable. Not retried.';\n  return tag + 'unexpected response. Not retried.';\n})() }}"
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000007",
+      "name": "Stop and explain",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        944,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Your next node goes here\nConnect your own node to **Output**. Each item has:\n- `markdown`: clean page content\n- `source_url`: the page it came from",
+        "height": 144,
+        "width": 260,
+        "color": 4
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000008",
+      "name": "Sticky: next node",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## URL to clean Markdown (no API key)\nEdit `url` in **Input URL**, then run. Keyless: 100 requests/day, shared by everyone behind the same egress IP.\n\nSetup guide and error handling: https://github.com/replynodes/free-markdown-brand-logo-api/blob/main/examples/markdown/n8n-url-to-markdown.md",
+        "height": 176,
+        "width": 420,
+        "color": 7
+      },
+      "id": "3b1f1a52-0c1d-4a55-9a60-000000000009",
+      "name": "Sticky: guide",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -240
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Input URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input URL": {
+      "main": [
+        [
+          {
+            "node": "ReplyNodes Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReplyNodes Markdown": {
+      "main": [
+        [
+          {
+            "node": "Route response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route response": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 2s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and explain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2s": {
+      "main": [
+        [
+          {
+            "node": "ReplyNodes Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
